@@ -1,30 +1,6 @@
 import axios from 'axios';
 import FormData from 'form-data';
-import fs from 'fs';
-import { Telegraf } from 'telegraf'
-import { message } from "telegraf/filters";
 
-
-
-const TgToken = "7405090933:AAH-dmLJLZTMiLXAh3IhUMgeCYgbAEO5MRM";
-const key = "5DF028B1F9C6E812ACD62162D65DA07C";
-const secretKey = 'AEDDB5CAADA9B38F1186608F38AF5EBC';
-
-const bot = new Telegraf(TgToken);
-let penis = ""
-
-bot.command('start', (ctx) => ctx.reply('Ку, я был накоден за час, поэтому не гарантирую тебе нормальные картинки на твои запросы, как нибуть попозже меня доделают, а пока просто введи что хочешь получить'))
-
-bot.on(message("text"), async (ctx, next) => {
-    ctx.reply("пагади пока сгенерю")
-    penis = ctx.message.text
-    console.log(penis)
-    let image = await Generative();
-    ctx.replyWithPhoto(
-        {source: image }, 
-        {caption: "ну я пытался крч"}
-    )
-})
 
 class Text2ImageAPI {
     constructor(url, apiKey, secretKey) {
@@ -40,16 +16,16 @@ class Text2ImageAPI {
       return response.data[0].id;
     }
 
-    async generate(prompt, model, images = 1, width = 1024, height = 1024, style = 3) {
+    async generate(prompt, model, images = 1, width = 1024, height = 1024, style) {
         const styles = ["KANDINSKY", "UHD", "ANIME", "DEFAULT"];
         const params = {
             type: "GENERATE",
             numImages: images,
             width,
             height,
-            style: styles[3],
+            style: style,
             generateParams: {
-                query: penis
+                query: prompt
             }
         };
 
@@ -90,11 +66,11 @@ class Text2ImageAPI {
     
 }
 
-async function Generative() {
+export async function Generative(query, style) {
     console.log('start generation...')
     const api = new Text2ImageAPI('https://api-key.fusionbrain.ai/', '5DF028B1F9C6E812ACD62162D65DA07C', 'AEDDB5CAADA9B38F1186608F38AF5EBC');
     const modelId = await api.getModels();
-    const uuid = await api.generate("Язык программирования JavaScript", modelId, 1, 1024, 1024, 1);
+    const uuid = await api.generate(query, modelId, 1, 1024, 1024, style);
     const images = await api.checkGeneration(uuid);
     const base64String = images[0];  // Получаем код изображения
     // Преобразование строки base64 в бинарные данные
@@ -110,5 +86,3 @@ async function Generative() {
       console.log('Файл сохранен!');
     }); */
 };
-
-bot.launch()

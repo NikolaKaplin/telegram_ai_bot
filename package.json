@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "tsx src/index.ts"
+    "start": "tsx index.ts"
   },
   "keywords": [],
   "author": "",
@@ -15,9 +15,13 @@
     "typescript": "^5.5.4"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.17.1",
+    "@types/recursive-readdir": "^2.2.4",
     "axios": "^1.7.7",
     "FormData": "^0.10.1",
     "fs": "^0.0.1-security",
+    "readdirp": "^4.0.1",
+    "recursive-readdir": "^2.2.3",
     "telegraf": "^4.16.3",
     "tsx": "^4.19.0"
   }
