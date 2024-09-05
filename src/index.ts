@@ -47,7 +47,7 @@ class Text2ImageAPI {
             numImages: images,
             width,
             height,
-            style: styles[2],
+            style: styles[3],
             generateParams: {
                 query: penis
             }
