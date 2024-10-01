@@ -1,11 +1,9 @@
-import axios from 'axios';
-import FormData from 'form-data';
-import fs from 'fs';
 import path from "path";
-import { message } from "telegraf/filters";
 import BotRouting, { BotRouter } from "./util/BotRouting";
 import { Context, Telegraf } from "telegraf";
-import { User } from "telegraf/types";
+import ServerlessHttp from "serverless-http";
+import Express from "express";
+import env from './env';
 
 const folderID = "b1gki1bbuvdqbe8jof25"
 const YAindetefecation = "ajehne606j98crni3vs7";
@@ -34,7 +32,7 @@ export class CustomContext extends Context {
 
 
 const startBot = () => {
-  const token = "7405090933:AAH-dmLJLZTMiLXAh3IhUMgeCYgbAEO5MRM";
+  const token = env.TELEGRAM_BOT_TOKEN;
   const bot = new Telegraf(token, {
     contextType: CustomContext,
   });
@@ -61,7 +59,6 @@ const startBot = () => {
     next();
   });
 
-  bot.launch();
   globalThis.bot = bot;
   return bot;
 };
@@ -69,4 +66,45 @@ const startBot = () => {
 const bot = (() => (globalThis.bot as Telegraf<CustomContext>) || startBot())();
 export default bot;
 
-routing.initialize(path.join(__dirname, "./bot"));
+const routingInitializing = routing.initialize(path.join(__dirname, "./bot"));
+
+async function getApp() {
+  const app = Express();
+
+  app.use(
+    "*",
+    await bot.createWebhook({
+      domain: env.WEBHOOK_DOMAIN,
+      path: "/",
+    })
+  );
+
+  if (env.NODE_ENV !== "production") await app.listen(3000);
+
+  return app;
+}
+
+if (env.NODE_ENV !== "production") bot.launch();
+
+export async function handler(event: any, context: any) {
+  let message: any = {};
+  try {
+    message = JSON.parse(event.body);
+  } catch {
+    if (env.WEBHOOK_DOMAIN)
+      await bot.createWebhook({
+        domain: env.WEBHOOK_DOMAIN,
+        path: "/",
+      });
+    return {
+      statusCode: 400,
+      body:
+        "This is not a Telegram update." +
+        (env.WEBHOOK_DOMAIN ? " Webhook was registered." : ""),
+    };
+  }
+
+  await routingInitializing;
+
+  return await ServerlessHttp(await getApp())(event, context);
+}

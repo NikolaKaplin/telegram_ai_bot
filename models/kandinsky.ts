@@ -1,6 +1,6 @@
 import axios from 'axios';
 import FormData from 'form-data';
-
+import env from "../env";
 
 class Text2ImageAPI {
     constructor(url, apiKey, secretKey) {
@@ -68,7 +68,7 @@ class Text2ImageAPI {
 
 export async function Generative(query, style) {
     console.log('start generation...')
-    const api = new Text2ImageAPI('https://api-key.fusionbrain.ai/', '5DF028B1F9C6E812ACD62162D65DA07C', 'AEDDB5CAADA9B38F1186608F38AF5EBC');
+    const api = new Text2ImageAPI('https://api-key.fusionbrain.ai/', env.KANDINSKY_KEY, env.KANDINSKY_SECRET_KEY);
     const modelId = await api.getModels();
     const uuid = await api.generate(query, modelId, 1, 1024, 1024, style);
     const images = await api.checkGeneration(uuid);

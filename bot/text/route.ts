@@ -25,7 +25,8 @@ bot.on(message("text"), async (ctx, next) => {
   console.log(query)
   let text = await GenerativeText(query);
   return ctx.reply(
-    text
+    text,
+    {parse_mode: "Markdown"}
   )
 })
 
