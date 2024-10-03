@@ -1,33 +1,39 @@
-import { text } from "stream/consumers";
 import bot, { CustomContext } from "..";
 import { message } from "telegraf/filters";
 import { RouteConfig } from "../util/BotRouting";
+import { getImage } from "../models/Runware";
+import { mixtral } from "../models/hand-ai/mixtral-8x7b-32768";
+import { llama_70b } from "../models/hand-ai/llama3-70b-8192";
+
 
 const route = new RouteConfig<CustomContext>({
   async greeting(ctx) {
     const router = ctx.router.validate(route);
     if (!router) return;
     const lastMessageId: number | undefined = (ctx as any)?.callbackQuery?.id;
-    const ReplyMarkup = {
-      inline_keyboard: [
-        [route.buttons.forward("Задайте вопрос", "/text")],
-        [route.buttons.forward("Генерация изображений", "/image")],
-      ],
-    };
     if (lastMessageId) {
-      try {
-        ctx.editMessageText("Выберите нужный инструмент", {
-          reply_markup: { inline_keyboard: ReplyMarkup.inline_keyboard },
-        });
-      } catch (error) {
-        ctx.reply("Выберите нужный инструмент", {
-          reply_markup: { inline_keyboard: ReplyMarkup.inline_keyboard },
-        });
-      }
-    } else
-      ctx.reply("Выберите нужный инструмент", {
-        reply_markup: { inline_keyboard: ReplyMarkup.inline_keyboard },
-      });
+    } else {
+    }
   },
 });
+
+bot.on(message("text"), async (ctx) => {
+  let query = ctx.message.text;
+  console.log(query);
+  let response = (await llama_70b(
+    "if the user asks to generate or draw an image, answer picture and nothing else,and if the user asks a question, then output text and nothing else User request:" +
+      query
+  )).toLowerCase();
+  let answer;
+  console.log(response);
+  if (response == "text") {
+    answer = await mixtral(query);
+    ctx.reply(answer, { parse_mode: "Markdown" });
+  }
+  if (response == "picture") {
+    answer = await getImage(query);
+    ctx.replyWithPhoto({ source: answer });
+  }
+});
+
 export default route;

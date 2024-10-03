@@ -12,7 +12,8 @@ const env = createEnv({
     KANDINSKY_SECRET_KEY: z.string(),
     KANDINSKY_KEY: z.string(),
     YA_GPT_TOKEN: z.string(),
-    X_FOLDER_ID: z.string()
+    X_FOLDER_ID: z.string(),
+    HAND_AI_TOKEN: z.string()
   },
   runtimeEnv: process.env,
 });

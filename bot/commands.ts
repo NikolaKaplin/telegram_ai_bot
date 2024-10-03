@@ -3,9 +3,7 @@ import bot, { CustomContext } from "..";
 import route from "./route";
 
 bot.command("start", async (ctx, next) => {
+  ctx.reply("Добро пожаловать, я мультимодальный бот-нейросеть")
   ctx.router.redirect("/")
 });
 
-bot.command("menu", async (ctx, next) => {
-  ctx.router.redirect("/")
-});
