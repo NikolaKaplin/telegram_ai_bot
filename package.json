@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.17.1",
+    "@runware/sdk-js": "^1.1.18",
     "@t3-oss/env-core": "0.7.1",
     "@types/dotenv": "^8.2.0",
     "@types/recursive-readdir": "^2.2.4",
