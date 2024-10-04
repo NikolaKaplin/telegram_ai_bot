@@ -5,12 +5,7 @@ import ServerlessHttp from "serverless-http";
 import Express from "express";
 import env from './env';
 
-const folderID = "b1gki1bbuvdqbe8jof25"
-const YAindetefecation = "ajehne606j98crni3vs7";
-const YAtoken = "AQVN0buMA00oZu8h_4eJD3yWHnNdK4tv47TdKdBl"
-const TgToken = "7405090933:AAH-dmLJLZTMiLXAh3IhUMgeCYgbAEO5MRM";
-const key = "5DF028B1F9C6E812ACD62162D65DA07C";
-const secretKey = 'AEDDB5CAADA9B38F1186608F38AF5EBC';
+
 
 type UserData = {
   selectedCharacterId?: string;
