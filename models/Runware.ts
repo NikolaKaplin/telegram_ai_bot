@@ -12,7 +12,7 @@ export async function getImage(prompt: string) {
     outputFormat: "PNG",
     model: "⁡civitai:133005@782002",
     steps: 25,
-    CFGScale: 7.0,
+    CFGScale: 5.0,
     numberResults: 1,
   });
   let base64Data = images[0].imageBase64Data;
@@ -20,3 +20,7 @@ export async function getImage(prompt: string) {
   console.log(buffer);
   return buffer;
 }
+
+
+"⁡civitai:133005@782002" // model realistic
+"civitai:7371@425083" // anime model

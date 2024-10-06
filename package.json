@@ -4,7 +4,7 @@
   "description": "Get started by customizing your environment (defined in the .idx/dev.nix file) with the tools and IDE extensions you'll need for your project!",
   "main": "index.ts",
   "scripts": {
-    "build": "swc . -d dist && zip -r dist/build.zip package.json dist",
+    "build": "rm -rf dist && swc . -d dist && zip -r dist/build.zip package.json dist",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "tsx index.ts"
   },
@@ -24,10 +24,10 @@
     "@t3-oss/env-core": "0.7.1",
     "@types/dotenv": "^8.2.0",
     "@types/recursive-readdir": "^2.2.4",
+    "FormData": "^0.10.1",
     "axios": "^1.7.7",
     "dotenv": "^16.4.5",
     "express": "^4.21.0",
-    "FormData": "^0.10.1",
     "fs": "^0.0.1-security",
     "readdirp": "^4.0.1",
     "recursive-readdir": "^2.2.3",

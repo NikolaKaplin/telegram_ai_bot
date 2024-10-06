@@ -2,8 +2,7 @@ import bot, { CustomContext } from "..";
 import { message } from "telegraf/filters";
 import { RouteConfig } from "../util/BotRouting";
 import { getImage } from "../models/Runware";
-import { mixtral } from "../models/hand-ai/mixtral-8x7b-32768";
-import { llama_70b } from "../models/hand-ai/llama3-70b-8192";
+import { llama_70b, mixtral } from "../models/hand-ai";
 
 
 const route = new RouteConfig<CustomContext>({
@@ -18,21 +17,20 @@ const route = new RouteConfig<CustomContext>({
 });
 
 bot.on(message("text"), async (ctx) => {
-  let query = ctx.message.text;
+  let query = (ctx.message.text).toString().replace(/\s+/g, ' ');
   console.log(query);
   let response = (await llama_70b(
     "if the user asks to generate or draw an image, answer picture and nothing else,and if the user asks a question, then output text and nothing else User request:" +
       query
-  )).toLowerCase();
-  let answer;
+  ));
   console.log(response);
-  if (response == "text") {
-    answer = await mixtral(query);
-    ctx.reply(answer, { parse_mode: "Markdown" });
+  if (response.toLowerCase().includes("text")) {
+    let answer = await mixtral(query);
+    await ctx.reply(answer, { parse_mode: "Markdown" });
   }
-  if (response == "picture") {
-    answer = await getImage(query);
-    ctx.replyWithPhoto({ source: answer });
+  if (response.toLowerCase().includes("picture")) {
+    let answer = await getImage(query);
+    await ctx.replyWithPhoto({ source: answer });
   }
 });
 
