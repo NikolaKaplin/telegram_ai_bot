@@ -69,7 +69,11 @@ async function getApp() {
       path: "/",
     })
   );
-  if (env.NODE_ENV !== "production") app.listen(3000);
+
+  if (env.NODE_ENV !== "production") {
+    app.listen(3000);
+    bot.launch(() => console.log(`signed in as ${bot.botInfo?.username}`));
+  }
 
   return app;
 }
