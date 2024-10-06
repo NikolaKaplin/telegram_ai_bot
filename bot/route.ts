@@ -4,7 +4,6 @@ import { RouteConfig } from "../util/BotRouting";
 import { getImage } from "../models/Runware";
 import { llama_70b, mixtral } from "../models/hand-ai";
 
-
 const route = new RouteConfig<CustomContext>({
   async greeting(ctx) {
     const router = ctx.router.validate(route);

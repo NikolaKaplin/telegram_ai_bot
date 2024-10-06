@@ -1,11 +1,8 @@
 import path from "path";
 import BotRouting, { BotRouter } from "./util/BotRouting";
 import { Context, Telegraf } from "telegraf";
-import ServerlessHttp from "serverless-http";
 import Express from "express";
-import env from './env';
-
-
+import env from "./env";
 
 type UserData = {
   selectedCharacterId?: string;
@@ -24,15 +21,13 @@ export class CustomContext extends Context {
   router = new BotRouter(this, routing, "/", () => {});
 }
 
-
-
 const startBot = () => {
   const token = env.TELEGRAM_BOT_TOKEN;
   const bot = new Telegraf(token, {
     contextType: CustomContext,
   });
 
-  bot.use((ctx, next) => {
+  bot.use(async (ctx, next) => {
     ctx.router = new BotRouter(
       ctx,
       routing,
@@ -51,7 +46,7 @@ const startBot = () => {
       "route:" +
       ctx.getUserData().currentBotPath;
     console.log(lastRoute);
-    next();
+    await next();
   });
 
   globalThis.bot = bot;
@@ -64,6 +59,7 @@ export default bot;
 const routingInitializing = routing.initialize(path.join(__dirname, "./bot"));
 
 async function getApp() {
+  await routingInitializing;
   const app = Express();
 
   app.use(
@@ -73,24 +69,20 @@ async function getApp() {
       path: "/",
     })
   );
-
-  if (env.NODE_ENV !== "production") await app.listen(3000);
+  if (env.NODE_ENV !== "production") app.listen(3000);
 
   return app;
 }
 
-if (env.NODE_ENV !== "production") bot.launch();
+if (env.NODE_ENV !== "production") getApp();
 
 export async function handler(event: any, context: any) {
-  let message: any = {};
+  let message: any = undefined;
   try {
     message = JSON.parse(event.body);
+    await routingInitializing;
   } catch {
-    if (env.WEBHOOK_DOMAIN)
-      await bot.createWebhook({
-        domain: env.WEBHOOK_DOMAIN,
-        path: "/",
-      });
+    if (env.WEBHOOK_DOMAIN) await bot.telegram.setWebhook(env.WEBHOOK_DOMAIN);
     return {
       statusCode: 400,
       body:
@@ -99,7 +91,9 @@ export async function handler(event: any, context: any) {
     };
   }
 
-  await routingInitializing;
+  if (message) await bot.handleUpdate(message);
 
-  return await ServerlessHttp(await getApp())(event, context);
+  return {
+    status: 200,
+  };
 }
