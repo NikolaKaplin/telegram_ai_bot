@@ -16,6 +16,8 @@
     "@swc/core": "^1.7.26",
     "@types/express": "^5.0.0",
     "@types/node": "^22.5.2",
+    "drizzle-kit": "^0.25.0",
+    "tsx": "^4.19.1",
     "typescript": "^5.5.4"
   },
   "dependencies": {
@@ -26,15 +28,16 @@
     "@types/recursive-readdir": "^2.2.4",
     "axios": "^1.7.7",
     "dotenv": "^16.4.5",
+    "drizzle-orm": "^0.34.0",
     "express": "^4.21.0",
     "FormData": "^0.10.1",
     "fs": "^0.0.1-security",
+    "mysql2": "^3.11.3",
     "readdirp": "^4.0.1",
     "recursive-readdir": "^2.2.3",
     "serverless-http": "^3.2.0",
     "sharp": "^0.33.5",
     "telegraf": "^4.16.3",
-    "tsx": "^4.19.0",
     "zod": "^3.23.8"
   }
 }

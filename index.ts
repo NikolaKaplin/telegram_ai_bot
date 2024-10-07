@@ -1,8 +1,13 @@
 import path from "path";
+import { User } from "telegraf/types";
 import BotRouting, { BotRouter } from "./util/BotRouting";
 import { Context, Telegraf } from "telegraf";
 import Express from "express";
 import env from "./env";
+import { users } from "./db/shema";
+import db from "./db";
+import { eq } from "drizzle-orm";
+import test from "node:test";
 
 type UserData = {
   selectedCharacterId?: string;
@@ -21,6 +26,27 @@ export class CustomContext extends Context {
   router = new BotRouter(this, routing, "/", () => {});
 }
 
+/*async function getDBUser(tg_user: User) {
+  const user = (
+    await db
+      .select()
+      .from(users)
+      .where(eq(users.telegram_id, tg_user.id))
+      .execute()
+  )[0];
+  if (!user) {
+    await db
+      .insert(users)
+      .values({
+        telegram_id: tg_user.id,
+        telegram_username: tg_user.username,
+      })
+      .execute();
+    //return getDBUser(tg_user);
+  }
+  return user;
+}*/
+
 const startBot = () => {
   const token = env.TELEGRAM_BOT_TOKEN;
   const bot = new Telegraf(token, {
@@ -28,6 +54,7 @@ const startBot = () => {
   });
 
   bot.use(async (ctx, next) => {
+    //let user = await getDBUser(ctx.from);
     ctx.router = new BotRouter(
       ctx,
       routing,

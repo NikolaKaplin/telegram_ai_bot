@@ -11,9 +11,9 @@ export async function getImage(prompt: string) {
     width: 1024,
     outputType: "base64Data",
     outputFormat: "PNG",
-    model: "civitai:139562@344487",
+    model: "runware:100@1",
     steps: 25,
-    CFGScale: 5.5,
+    CFGScale: 6.0,
     numberResults: 1,
     includeCost: true,
   });

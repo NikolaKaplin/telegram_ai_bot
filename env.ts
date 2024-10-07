@@ -6,7 +6,10 @@ dotenv.config();
 
 const env = createEnv({
   server: {
-    NODE_ENV: z.literal("production").or(z.literal("development")).default("development"),
+    NODE_ENV: z
+      .literal("production")
+      .or(z.literal("development"))
+      .default("development"),
     TELEGRAM_BOT_TOKEN: z.string(),
 
     KANDINSKY_KEY: z.string(),
@@ -17,6 +20,8 @@ const env = createEnv({
 
     X_FOLDER_ID: z.string(),
     WEBHOOK_DOMAIN: z.string().optional(),
+
+    DATABASE_URL: z.string().url(),
   },
   runtimeEnv: process.env,
 });
