@@ -1,8 +1,10 @@
 import bot, { CustomContext } from "..";
 import { message } from "telegraf/filters";
 import { RouteConfig } from "../util/BotRouting";
-import { getImage } from "../models/Runware";
-import { gemma, llama_70b, mixtral } from "../models/hand-ai";
+import { getImage, getImageDescription } from "../models/Runware";
+import { gemma, llama_70b, llama_8b, mixtral } from "../models/hand-ai";
+import sharp from "sharp";
+import { buffer, json } from "stream/consumers";
 
 const route = new RouteConfig<CustomContext>({
   async greeting(ctx) {
@@ -13,6 +15,46 @@ const route = new RouteConfig<CustomContext>({
     } else {
     }
   },
+});
+
+bot.on(message("photo"), async (ctx) => {
+  let photo;
+  try {
+    photo = ctx.message.photo[3];
+    const file = await ctx.telegram.getFile(photo.file_id);
+
+    // Get the file path
+    const filePath = file.file_path;
+
+    // Download the file
+    const response = await fetch(
+      `https://api.telegram.org/file/bot${ctx.telegram.token}/${filePath}`
+    );
+    const fileBuffer = await response.arrayBuffer();
+    await ctx.sendChatAction("typing");
+    let image = Buffer.from(fileBuffer);
+    let content = await getImageDescription(image.toString("base64"));
+    // Send the file back to the user
+    await ctx.reply(content);
+  } catch (eror) {
+    photo = ctx.message.photo[2];
+    const file = await ctx.telegram.getFile(photo.file_id);
+
+    // Get the file path
+    const filePath = file.file_path;
+
+    // Download the file
+    const response = await fetch(
+      `https://api.telegram.org/file/bot${ctx.telegram.token}/${filePath}`
+    );
+    const fileBuffer = await response.arrayBuffer();
+    await ctx.sendChatAction("typing");
+    let image = Buffer.from(fileBuffer);
+    let content = await getImageDescription(image.toString("base64"));
+    // Send the file back to the user
+    await ctx.reply(content);
+  }
+  console.log(ctx.message.photo);
 });
 
 bot.on(message("text"), async (ctx) => {
@@ -30,26 +72,23 @@ bot.on(message("text"), async (ctx) => {
   if (response.toLowerCase().includes("text")) {
     await ctx.sendChatAction("typing");
 
-    let answer = await gemma(query);
+    let answer = await llama_70b(query);
     await ctx.reply(answer, { parse_mode: "Markdown" });
   }
   if (response.toLowerCase().includes("picture")) {
     await ctx.sendChatAction("upload_photo");
-
-    let msg_id = undefined as number;
-
-    await getImage(query, async (img, mtnsfw) => {
-      const media = { source: img };
-      const isNSFW = mtnsfw || response.toLowerCase().includes("nsfw");
-      let caption = "";
-      if (isNSFW == true)
-        caption = "🔞 Осторожно, может содежаться неприличный контент!!!";
-      if (!msg_id)
-        await ctx.replyWithPhoto(media, {
-          has_spoiler: isNSFW,
-          caption: caption,
-        });
-    });
+    let image = await getImage(query);
+    const isNSFW = response.toLowerCase().includes("nsfw");
+    let caption = "";
+    if (isNSFW == true)
+      caption = "🔞 Осторожно, может содежаться нежелательный контент!!!";
+    await ctx.replyWithPhoto(
+      { source: image },
+      {
+        has_spoiler: isNSFW,
+        caption: caption,
+      }
+    );
   }
 });
 

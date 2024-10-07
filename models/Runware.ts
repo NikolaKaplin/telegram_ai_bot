@@ -1,11 +1,9 @@
+import { TaskType } from "@google/generative-ai";
 import { Runware } from "@runware/sdk-js";
 
 const runware = new Runware({ apiKey: "FBMP4fcFJXCy6KTBKbHCeVmVRNtjY1xF" });
 
-export async function getImage(
-  prompt: string,
-  onPart?: (img: Buffer, isNSFW: boolean) => any
-) {
+export async function getImage(prompt: string) {
   console.log("start generation");
   const images = await runware.requestImages({
     positivePrompt: prompt,
@@ -17,14 +15,9 @@ export async function getImage(
     steps: 25,
     CFGScale: 5.5,
     numberResults: 1,
-    onPartialImages(images, error) {
-      if (onPart)
-        onPart(
-          Buffer.from(images[0].imageBase64Data, "base64"),
-          images[0].NSFWContent
-        );
-    },
+    includeCost: true,
   });
+  console.log(images);
   let base64Data = images[0].imageBase64Data;
   const buffer = Buffer.from(base64Data, "base64");
   console.log(buffer);
@@ -33,3 +26,19 @@ export async function getImage(
 
 ("⁡civitai:133005@782002"); // model realistic
 ("civitai:7371@425083"); // anime model
+
+export async function getImageDescription(image: string) {
+  const caption = await runware.requestImageToText({
+    inputImage: image,
+  });
+  console.log(caption);
+  return caption.text;
+}
+
+export async function upgradePrompt(prompt: string) {
+  const upPrompt = await runware.enhancePrompt({
+    promptMaxLength: 2048,
+    prompt: prompt,
+  });
+  console.log(upPrompt);
+}
