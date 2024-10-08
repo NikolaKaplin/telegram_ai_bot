@@ -19,42 +19,25 @@ const route = new RouteConfig<CustomContext>({
 
 bot.on(message("photo"), async (ctx) => {
   let photo;
-  try {
-    photo = ctx.message.photo[3];
-    const file = await ctx.telegram.getFile(photo.file_id);
-
-    // Get the file path
-    const filePath = file.file_path;
-
-    // Download the file
-    const response = await fetch(
-      `https://api.telegram.org/file/bot${ctx.telegram.token}/${filePath}`
-    );
-    const fileBuffer = await response.arrayBuffer();
-    await ctx.sendChatAction("typing");
-    let image = Buffer.from(fileBuffer);
-    let content = await getImageDescription(image.toString("base64"));
-    // Send the file back to the user
-    await ctx.reply(content);
-  } catch (eror) {
-    photo = ctx.message.photo[2];
-    const file = await ctx.telegram.getFile(photo.file_id);
-
-    // Get the file path
-    const filePath = file.file_path;
-
-    // Download the file
-    const response = await fetch(
-      `https://api.telegram.org/file/bot${ctx.telegram.token}/${filePath}`
-    );
-    const fileBuffer = await response.arrayBuffer();
-    await ctx.sendChatAction("typing");
-    let image = Buffer.from(fileBuffer);
-    let content = await getImageDescription(image.toString("base64"));
-    // Send the file back to the user
-    await ctx.reply(content);
-  }
+  photo = ctx.message.photo.slice(-1)[0].file_id;
   console.log(ctx.message.photo);
+  console.log(photo);
+  const file = await ctx.telegram.getFile(photo);
+
+  // Get the file path
+  const filePath = file.file_path;
+
+  // Download the file
+  const response = await fetch(
+    `https://api.telegram.org/file/bot${ctx.telegram.token}/${filePath}`
+  );
+  const fileBuffer = await response.arrayBuffer();
+  await ctx.sendChatAction("typing");
+  let image = Buffer.from(fileBuffer);
+  await ctx.replyWithPhoto({ source: image });
+  let content = await getImageDescription(image.toString("base64"));
+  // Send the file back to the user
+  await ctx.reply(content);
 });
 
 bot.on(message("text"), async (ctx) => {
