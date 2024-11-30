@@ -1,13 +1,13 @@
 {
-  "name": "my app",
-  "version": "1.0",
+  "name": "myapp",
   "description": "Get started by customizing your environment (defined in the .idx/dev.nix file) with the tools and IDE extensions you'll need for your project!",
   "main": "index.ts",
   "scripts": {
-    "build": "rm -rf dist && swc . -d dist && zip -r dist/build.zip package.json dist",
+    "build": "rm -rf dist && swc . -d dist && zip -r dist/build.zip prisma package.json dist",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "tsx index.ts",
-    "db push": "prisma db push"
+    "db push": "prisma db push",
+    "postinstall": "prisma generate"
   },
   "keywords": [],
   "author": "",
@@ -17,13 +17,12 @@
     "@swc/core": "^1.7.26",
     "@types/express": "^5.0.0",
     "@types/node": "^22.5.2",
-    "drizzle-kit": "^0.25.0",
     "tsx": "^4.19.1",
     "typescript": "^5.5.4"
   },
   "dependencies": {
     "@google/generative-ai": "^0.17.1",
-    "@prisma/client": "^6.0.0",
+    "@prisma/client": "5.1.1",
     "@runware/sdk-js": "^1.1.18",
     "@t3-oss/env-core": "0.7.1",
     "@types/dotenv": "^8.2.0",
@@ -35,7 +34,7 @@
     "FormData": "^0.10.1",
     "fs": "^0.0.1-security",
     "mysql2": "^3.11.3",
-    "prisma": "^6.0.0",
+    "prisma": "5.1.1",
     "readdirp": "^4.0.1",
     "recursive-readdir": "^2.2.3",
     "serverless-http": "^3.2.0",
