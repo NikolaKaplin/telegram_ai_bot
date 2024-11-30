@@ -1,13 +1,15 @@
+import env from "../env";
+
 function makeModelFunction(model_name: string) {
-  return async function (prompt: string, retry_times: number = 5) {
+  return async function (prompt: HandMessage[], retry_times: number = 5) {
     const url = "https://hand.ni-li.com/api/llm-on-lpacpu/generate";
     const options = {
       method: "POST",
       headers: {
         "content-type": "application/json",
-        Authorization: "Bearer " + process.env.HAND_AI_TOKEN,
+        Authorization: "Bearer " + env.HAND_AI_TOKEN,
       },
-      body: `{"model":"${model_name}","prompt": "${prompt}"}`,
+      body: `{"model":"${model_name}","prompt": ${JSON.stringify(prompt)}}`,
     };
 
     try {
@@ -25,6 +27,11 @@ function makeModelFunction(model_name: string) {
     }
   };
 }
+
+export type HandMessage = {
+  role: "user" | "assistant";
+  content: string;
+};
 
 export const llama_70b = makeModelFunction("llama3-70b-8192");
 export const mixtral = makeModelFunction("mixtral-8x7b-32768");

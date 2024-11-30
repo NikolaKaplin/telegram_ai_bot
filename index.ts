@@ -1,14 +1,10 @@
 import path from "path";
-import { User } from "telegraf/types";
 import BotRouting, { BotRouter } from "./util/BotRouting";
 import { Context, Telegraf } from "telegraf";
 import Express from "express";
 import env from "./env";
-import { users } from "./db/shema";
-import db from "./db";
-import { eq } from "drizzle-orm";
-import test from "node:test";
-
+import { prisma } from "./prisma/prisma-client";
+import { User } from "@prisma/client";
 type UserData = {
   selectedCharacterId?: string;
   currentBotPath: string;
@@ -24,28 +20,32 @@ export class CustomContext extends Context {
     return usersData.get(this.from.id);
   }
   router = new BotRouter(this, routing, "/", () => {});
+  user: User;
 }
 
-/*async function getDBUser(tg_user: User) {
-  const user = (
-    await db
-      .select()
-      .from(users)
-      .where(eq(users.telegram_id, tg_user.id))
-      .execute()
-  )[0];
-  if (!user) {
-    await db
-      .insert(users)
-      .values({
-        telegram_id: tg_user.id,
-        telegram_username: tg_user.username,
-      })
-      .execute();
-    //return getDBUser(tg_user);
+async function registerUser(id, username: string) {
+  try {
+    const user = await prisma.user.findFirst({
+      where: {
+        telegramId: id,
+      },
+    });
+
+    if (!user) {
+      const createdUser = await prisma.user.create({
+        data: {
+          name: username,
+          telegramId: id,
+        },
+      });
+      return createdUser;
+    } else {
+      return user;
+    }
+  } catch (error) {
+    return undefined;
   }
-  return user;
-}*/
+}
 
 const startBot = () => {
   const token = env.TELEGRAM_BOT_TOKEN;
@@ -54,7 +54,9 @@ const startBot = () => {
   });
 
   bot.use(async (ctx, next) => {
-    //let user = await getDBUser(ctx.from);
+    const user = await registerUser(ctx.from.id, ctx.from.username);
+    ctx.user = user;
+    console.log(user);
     ctx.router = new BotRouter(
       ctx,
       routing,

@@ -2,9 +2,17 @@ import bot, { CustomContext } from "..";
 import { message } from "telegraf/filters";
 import { RouteConfig } from "../util/BotRouting";
 import { getImage, getImageDescription } from "../models/Runware";
-import { gemma, llama_70b, llama_8b, mixtral } from "../models/hand-ai";
+import {
+  HandMessage,
+  gemma,
+  llama_70b,
+  llama_8b,
+  mixtral,
+} from "../models/hand-ai";
 import sharp from "sharp";
 import { buffer, json } from "stream/consumers";
+import { prisma } from "../prisma/prisma-client";
+import { Message, Prisma } from "@prisma/client";
 
 const route = new RouteConfig<CustomContext>({
   async greeting(ctx) {
@@ -17,7 +25,7 @@ const route = new RouteConfig<CustomContext>({
   },
 });
 
-bot.on(message("photo"), async (ctx) => {
+/*bot.on(message("photo"), async (ctx) => {
   let photo;
   photo = ctx.message.photo.slice(-1)[0].file_id;
   console.log(ctx.message.photo);
@@ -37,22 +45,82 @@ bot.on(message("photo"), async (ctx) => {
   await ctx.replyWithPhoto({ source: image });
   let content = await getImageDescription(image.toString("base64"));
   // Send the file back to the user
-  await ctx.reply(content);
+  await ctx.reply(content, {parse_mode: "Markdown"});
 });
+*/
+
+function dbToHandMessages(messages: Message[]): HandMessage[] {
+  return messages.map((message) => {
+    return {
+      role: message.isBot ? "assistant" : "user",
+      content: message.message,
+    };
+  });
+}
+
+function handToDbMessages(
+  message: HandMessage
+): Prisma.MessageCreateWithoutChatInput {
+  return {
+    isBot: message.role === "assistant",
+    message: message.content,
+  };
+}
 
 bot.on(message("text"), async (ctx) => {
   let query = ctx.message.text
     .toString()
     .replace(/\s+/g, " ")
     .toString()
-    .replace(/"/g, "");
+    .replace(/"/g, "")
+    .slice(0, 4070);
   console.log(query);
-  let response = await llama_70b(
-    "if the user asks to generate or draw an image, answer picture and nothing else,and if the user asks a question or writing, then output text and nothing else. If an image should contain any nsfw content, reply with picture-nsfw.If User request:" +
-      query
-  );
+  let chat = await prisma.chat.findFirst({
+    where: {
+      userId: ctx.user.id,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+  if (!chat) {
+    chat = await prisma.chat.create({
+      data: {
+        userId: ctx.user.id,
+      },
+    });
+  }
+  const messageText = await prisma.message.create({
+    data: {
+      message: query,
+      chatId: chat!.id,
+      isBot: false,
+    },
+  });
+  let messages = await prisma.message.findMany({
+    where: {
+      chatId: chat!.id,
+    },
+    orderBy: {
+      id: "asc",
+    },
+  });
+  let response = await llama_70b(dbToHandMessages(messages));
   console.log(response);
-  if (response.toLowerCase().includes("text")) {
+  ctx.reply(response.replace(/^\*\s/gm, "- "), { parse_mode: "Markdown" });
+
+  await prisma.message.create({
+    data: {
+      message: response,
+      chatId: chat!.id,
+      isBot: true,
+    },
+  });
+});
+
+export default route;
+
+/*if (response.toLowerCase().includes("text")) {
     await ctx.sendChatAction("typing");
 
     let answer = await llama_70b(query);
@@ -73,6 +141,4 @@ bot.on(message("text"), async (ctx) => {
       }
     );
   }
-});
-
-export default route;
+  */

@@ -4,6 +4,7 @@
   # Use https://search.nixos.org/packages to find packages
   packages = [
     pkgs.zip
+    pkgs.openssl.dev
   ];
 
   env = {};
