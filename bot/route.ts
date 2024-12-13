@@ -105,9 +105,9 @@ bot.on(message("text"), async (ctx) => {
       id: "asc",
     },
   });
-  let response = await llama_70b(dbToHandMessages(messages));
+  let response = (await gemma(dbToHandMessages(messages))).toString();
   console.log(response);
-  ctx.reply(response.replace(/^\*\s/gm, "- "), { parse_mode: "Markdown" });
+  ctx.reply(response, { parse_mode: "Markdown" });
 
   await prisma.message.create({
     data: {
