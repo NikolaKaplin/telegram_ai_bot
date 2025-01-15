@@ -1,7 +1,7 @@
 import axios from "axios";
 import FormData = require("form-data");
 
-const generateApiKey = () => {
+export function generateApiKey() {
   let userAgent =
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0";
   var myrandomstr = Math.round(Math.random() * 100000000000) + "";
@@ -68,12 +68,12 @@ const generateApiKey = () => {
         myhashfunction(
           userAgent +
             myhashfunction(
-              userAgent + myrandomstr + "i_am_a_smelly_hacker_yes_i_am"
+              userAgent + myrandomstr + "suditya_is_a_smelly_hacker"
             )
         )
     )
   );
-};
+}
 
 process.stdin.setEncoding("utf8");
 process.stdin.on("data", function (input) {

@@ -1,10 +1,12 @@
 import path from "path";
+import { User } from "telegraf/types";
 import BotRouting, { BotRouter } from "./util/BotRouting";
 import { Context, Telegraf } from "telegraf";
 import Express from "express";
 import env from "./env";
-import { prisma } from "./prisma/prisma-client";
-import { User } from "@prisma/client";
+import { eq } from "drizzle-orm";
+import db from "./db";
+import { users } from "./db/schema";
 type UserData = {
   selectedCharacterId?: string;
   currentBotPath: string;
@@ -23,28 +25,24 @@ export class CustomContext extends Context {
   user: User;
 }
 
-async function registerUser(id, username: string) {
-  try {
-    const user = await prisma.user.findFirst({
-      where: {
-        telegramId: id,
-      },
-    });
-
-    if (!user) {
-      const createdUser = await prisma.user.create({
-        data: {
-          name: username,
-          telegramId: id,
-        },
-      });
-      return createdUser;
-    } else {
-      return user;
-    }
-  } catch (error) {
-    return undefined;
+async function getDBUser(tg_user: User) {
+  const user = (
+    await db
+      .select()
+      .from(users)
+      .where(eq(users.telegram_id, tg_user.id))
+      .execute()
+  )[0];
+  if (!user) {
+    await db
+      .insert(users)
+      .values({
+        telegram_id: tg_user.id,
+      })
+      .execute();
+    return getDBUser(tg_user);
   }
+  return user;
 }
 
 const startBot = () => {
@@ -54,17 +52,17 @@ const startBot = () => {
   });
 
   bot.use(async (ctx, next) => {
-    const user = await registerUser(ctx.from.id, ctx.from.username);
-    ctx.user = user;
+    const user = await getDBUser(ctx.from);
     console.log(user);
-    ctx.router = new BotRouter(
-      ctx,
-      routing,
-      ctx.getUserData().currentBotPath,
-      (path) => {
-        ctx.getUserData().currentBotPath = path;
-      }
-    );
+    ctx.router = new BotRouter(ctx, routing, user.bot_path, async (path) => {
+      await db
+        .update(users)
+        .set({
+          bot_path: path,
+        })
+        .where(eq(users.id, user.id))
+        .execute();
+    });
     let lastRoute =
       "User:" +
       ctx.from.username +
