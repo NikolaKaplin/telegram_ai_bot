@@ -4,7 +4,10 @@ import { Context, Telegraf } from "telegraf";
 import Express from "express";
 import env from "./env";
 import { prisma } from "./prisma/prisma-client";
-import { User } from "@prisma/client";
+import { db } from "./db";
+import { userTable } from "./db/schema";
+import { eq } from "drizzle-orm";
+import { User } from "telegraf/types";
 type UserData = {
   selectedCharacterId?: string;
   currentBotPath: string;
@@ -23,21 +26,17 @@ export class CustomContext extends Context {
   user: User;
 }
 
-async function registerUser(id, username: string) {
+async function registerUser(id: number, firstName: string, lastName: string) {
   try {
-    const user = await prisma.user.findFirst({
-      where: {
-        telegramId: id,
-      },
-    });
+    const [user] = await db.select().from(userTable).where(eq(userTable.id, id))
 
     if (!user) {
-      const createdUser = await prisma.user.create({
-        data: {
-          name: username,
-          telegramId: id,
-        },
-      });
+      const createdUser = await db.insert(userTable).values({
+        tgId: id,
+        firstName: firstName,
+        lastName: lastName,
+        model: "gemma2-9b-it",
+      }).$returningId()
       return createdUser;
     } else {
       return user;
@@ -54,7 +53,7 @@ const startBot = () => {
   });
 
   bot.use(async (ctx, next) => {
-    const user = await registerUser(ctx.from.id, ctx.from.username);
+    const user = await registerUser(ctx.from.id, ctx.from.first_name, ctx.from.last_name);
     ctx.user = user;
     console.log(user);
     ctx.router = new BotRouter(

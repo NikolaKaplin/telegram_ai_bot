@@ -33,7 +33,11 @@ export type HandMessage = {
   content: string;
 };
 
-export const llama_70b = makeModelFunction("llama3-70b-8192");
-export const mixtral = makeModelFunction("mixtral-8x7b-32768");
-export const gemma = makeModelFunction("gemma-7b-it");
-export const llama_8b = makeModelFunction("llama3-8b-8192");
+export const gemma2_9b_it = makeModelFunction("gemma2-9b-it");
+export const llama_70b_versatile = makeModelFunction("llama-3.3-70b-versatile");
+export const llama_8b_instant = makeModelFunction("llama-3.1-8b-instant");
+export const llama_guard_8b = makeModelFunction("llama-guard-3-8b");
+export const qwen_32b = makeModelFunction("qwen-2.5-32b")
+export const qwen_coder_32b = makeModelFunction("qwen-2.5-coder-32b")
+export const llama3_70b_8192 = makeModelFunction("llama3-70b-8192")
+export const llama3_8b_8192 = makeModelFunction("llama3-8b-8192")
